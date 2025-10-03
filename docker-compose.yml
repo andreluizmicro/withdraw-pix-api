@@ -1,0 +1,39 @@
+services:
+  api:
+    container_name: withdraw-pix-api
+    image: hyperf-skeleton
+    build:
+      context: .
+    volumes:
+      - ./:/opt/www
+    ports:
+      - 9501:9501
+    environment:
+      - APP_ENV=dev
+      - SCAN_CACHEABLE=false
+
+  mysql:
+    build: ./.docker/mysql
+    container_name:  withdraw-pix-db
+    restart: always
+    tty: true
+    ports:
+      - 33006:3306
+    volumes:
+      - ./.docker/dbdata:/var/lib/mysql
+      - ./.docker/mysql:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_DATABASE=withdraw_pix
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - withdraw-pix-api
+
+  redis:
+    container_name: withdraw-pix-redis
+    image: redis
+    ports:
+      - 6379:6379
+
+networks:
+  withdraw-pix-api:
+    driver: bridge
