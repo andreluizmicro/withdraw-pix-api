@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace HyperfTest\Unit\Core\Domain\Entity;
+namespace HyperfTest\Unit\app\Domain\Entity;
 
-use App\Domain\Entity\WithDrawPix;
+use App\Domain\Entity\AccountWithDrawPix;
 use App\Domain\Exception\UuidException;
 use App\Domain\Exception\WithDrawPixException;
 use App\Domain\ValueObject\PixKey;
@@ -24,7 +24,7 @@ class WithdrawPixTest extends TestCase
         $accountWithdrawId = UUID::random();
         $pixType = new PixType('email');
 
-        $withDrawPix = new WithDrawPix(
+        $withDrawPix = new AccountWithDrawPix(
             id: $id,
             accountWithdrawId: $accountWithdrawId,
             type: $pixType,
@@ -34,7 +34,7 @@ class WithdrawPixTest extends TestCase
             ),
         );
 
-        $this->assertInstanceOf(WithDrawPix::class, $withDrawPix);
+        $this->assertInstanceOf(AccountWithDrawPix::class, $withDrawPix);
         $this->assertEquals($id->value, $withDrawPix->id()->value);
         $this->assertEquals($accountWithdrawId->value, $withDrawPix->accountWithdrawId()->value);
         $this->assertEquals($withDrawPix->type()->value(), $withDrawPix->type()->value());

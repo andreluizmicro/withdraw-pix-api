@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\DTO\Withdraw;
 
-use DateTimeImmutable;
-
-class WithdrawInputDTO
+class CreateWithdrawInputDTO
 {
     public function __construct(
         public string $accountId,
@@ -18,9 +16,9 @@ class WithdrawInputDTO
     ) {
     }
 
-    public static function fromArray(array $data): WithdrawInputDTO
+    public static function fromArray(array $data): CreateWithdrawInputDTO
     {
-        return new WithdrawInputDTO(
+        return new CreateWithdrawInputDTO(
             accountId: $data['account_id'],
             method: $data['method'],
             pixType: $data['pix']['type'],

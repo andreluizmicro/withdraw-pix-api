@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HyperfTest\Unit\Core\Domain\ValueObject;
+namespace HyperfTest\Unit\app\Domain\ValueObject;
 
 use App\Domain\Exception\NameException;
 use App\Domain\ValueObject\Name;

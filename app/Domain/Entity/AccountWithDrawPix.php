@@ -8,7 +8,7 @@ use App\Domain\ValueObject\Uuid;
 use App\Domain\ValueObject\PixKey;
 use App\Domain\ValueObject\PixType;
 
-class WithDrawPix
+class AccountWithDrawPix
 {
     public function __construct(
         private Uuid $id,

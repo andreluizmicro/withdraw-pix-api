@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Presentation\Http\V1\Request;
 
-use App\Application\DTO\Withdraw\WithdrawInputDTO;
+use App\Application\DTO\Withdraw\CreateWithdrawInputDTO;
 use App\Domain\Enum\WithdrawMethod;
 use Carbon\Carbon;
 use Hyperf\Validation\Request\FormRequest;
@@ -63,9 +63,9 @@ class WithdrawRequest extends FormRequest
         ];
     }
 
-    public function toDto(): WithdrawInputDTO
+    public function toDto(): CreateWithdrawInputDTO
     {
-        return WithdrawInputDTO::fromArray(
+        return CreateWithdrawInputDTO::fromArray(
             array_merge($this->validated(), [
                 'account_id' => $this->route('accountId'),
             ])

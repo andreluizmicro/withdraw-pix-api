@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\UseCase\Withdraw;
 
-use App\Application\DTO\Withdraw\WithdrawInputDTO;
+use App\Application\DTO\Withdraw\CreateWithdrawInputDTO;
 use App\Domain\Exception\DomainError;
 use App\Domain\Exception\Handler\Account\AccountNotFoundException;
 use App\Domain\Repository\Account\AccountRepositoryInterface;
@@ -21,7 +21,7 @@ class WithdrawFundsUseCase
     /**
      * @throws DomainError
      */
-    public function execute(WithdrawInputDTO $inputDTO): void
+    public function execute(CreateWithdrawInputDTO $inputDTO): void
     {
         try {
             $account = $this->accountRepository->findById($inputDTO->accountId);

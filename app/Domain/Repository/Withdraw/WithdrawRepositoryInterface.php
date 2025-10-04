@@ -6,5 +6,5 @@ namespace App\Domain\Repository\Withdraw;
 
 interface WithdrawRepositoryInterface
 {
-
+    public function create();
 }
