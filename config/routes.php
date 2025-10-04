@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Infrastructure\Presentation\Http\V1\Controller\AccountController;
+use App\Infrastructure\Presentation\Http\V1\Controller\AccountWithDrawPixController;
 use Hyperf\HttpServer\Router\Router;
 
 Router::get('/health', fn () => [
@@ -11,9 +12,8 @@ Router::get('/health', fn () => [
 ]);
 
 
-Router::addGroup('/api/v1', function () {
-    Router::addGroup('/account', function () {
-        Router::post('/', [AccountController::class, 'create']);
-       Router::post('{accountId}/balance/withdraw', 'App\Controller\AccountController@withdraw');
-    });
+Router::addGroup('/v1', function () {
+    Router::post('/account', [AccountController::class, 'create']);
+    Router::post('/account/{accountId}/balance/withdraw', [AccountController::class, 'withdraw']);
+    Router::post('/{accountId}/withdraw/pix', [AccountWithDrawPixController::class, 'store']);
 });

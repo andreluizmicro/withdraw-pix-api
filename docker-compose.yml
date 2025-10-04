@@ -11,6 +11,8 @@ services:
     environment:
       - APP_ENV=dev
       - SCAN_CACHEABLE=false
+    networks:
+      - withdraw-pix-api
 
   mysql:
     build: ./.docker/mysql
