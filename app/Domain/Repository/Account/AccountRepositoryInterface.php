@@ -26,4 +26,6 @@ interface AccountRepositoryInterface
      * @throws Exception
      */
     public function findById(string $id): ?Account;
+
+    public function update(Account $account): void;
 }

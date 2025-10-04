@@ -13,39 +13,21 @@ class ScheduleTest extends TestCase
 {
     public function testShouldCreateScheduleFalse(): void
     {
-        $schedule = new Schedule(
-            scheduled: false,
-            scheduledFor: null,
-        );
+        $schedule = new Schedule(date: null);
 
         $this->assertInstanceOf(Schedule::class, $schedule);
         $this->assertFalse($schedule->scheduled());
-        $this->assertNull($schedule->scheduledFor());
     }
 
     public function testShouldCreateScheduleSuccessfully(): void
     {
         $date = (new DateTimeImmutable())->modify('+2 days');
 
-        $schedule = new Schedule(
-            scheduled: true,
-            scheduledFor: $date,
-        );
+        $schedule = new Schedule(date: $date);
 
         $this->assertInstanceOf(Schedule::class, $schedule);
         $this->assertTrue($schedule->scheduled());
-        $this->assertEquals($date, $schedule->scheduledFor());
-    }
-
-    public function testShouldReturnExceptionWhenScheduledForIsRequired(): void
-    {
-        $this->expectException(ScheduleException::class);
-        $this->expectExceptionMessage('Scheduled date is required when scheduling is enabled');
-
-        new Schedule(
-            scheduled: true,
-            scheduledFor: null,
-        );
+        $this->assertEquals($date, $schedule->date());
     }
 
     public function testShouldReturnExceptionWhenScheduledForInThePast(): void
@@ -54,8 +36,7 @@ class ScheduleTest extends TestCase
         $this->expectExceptionMessage('Scheduled date cannot in the past');
 
         new Schedule(
-            scheduled: true,
-            scheduledFor: (new DateTimeImmutable())->modify('-100 days'),
+            date: (new DateTimeImmutable())->modify('-100 days')
         );
     }
 
@@ -65,8 +46,7 @@ class ScheduleTest extends TestCase
         $this->expectExceptionMessage('Scheduled date cannot be more than 7 days in the future');
 
         new Schedule(
-            scheduled: true,
-            scheduledFor: (new DateTimeImmutable())->modify('+8 days'),
+            date: (new DateTimeImmutable())->modify('+8 days'),
         );
     }
 }

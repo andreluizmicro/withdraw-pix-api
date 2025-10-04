@@ -9,6 +9,7 @@ use App\Domain\Exception\BalanceException;
 use App\Domain\Exception\Handler\Account\AccountNotFoundException;
 use App\Domain\Exception\Handler\Account\CreateAccountException;
 use App\Domain\Exception\NameException;
+use App\Domain\Exception\UpdateAccountException;
 use App\Domain\Exception\UuidException;
 use App\Domain\Repository\Account\AccountRepositoryInterface;
 use App\Domain\ValueObject\Balance;
@@ -53,7 +54,7 @@ class DbAccountRepository implements AccountRepositoryInterface
     public function findById(string $id): ?Account
     {
         $accountDb = $this->database->table('account')
-            ->where('ids', $id)
+            ->where('id', $id)
             ->first();
 
         if ($accountDb === null) {
@@ -66,5 +67,25 @@ class DbAccountRepository implements AccountRepositoryInterface
             balance: new Balance((float) $accountDb->balance),
             isActive: (bool) $accountDb->is_active,
         );
+    }
+
+    /**
+     * @throws UpdateAccountException
+     */
+    public function update(Account $account): void
+    {
+        try {
+            $this->database
+                ->table('account')
+                ->where('id', $account->id()->value)
+                ->update([
+                    'balance' => $account->balance()->value,
+                ]);
+        } catch (Throwable $throwable) {
+            throw new UpdateAccountException(
+                message: 'Error updating account',
+                previous: $throwable
+            );
+        }
     }
 }

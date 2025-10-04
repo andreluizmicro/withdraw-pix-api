@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use App\Domain\Repository\Account\AccountRepositoryInterface;
-use App\Domain\Repository\WithdrawPix\WithdrawPixRepositoryInterface;
+use App\Domain\Repository\Withdraw\WithdrawAttemptRepositoryInterface;
 use App\Infrastructure\Repository\MySQL\Account\DbAccountRepository;
-use App\Infrastructure\Repository\MySQL\WithdrawPix\DbWithdrawPixRepository;
+use App\Infrastructure\Repository\MySQL\Withdraw\DbWithdrawAttemptRepository;
 
 return [
     // Repository
     AccountRepositoryInterface::class => DbAccountRepository::class,
-    WithdrawPixRepositoryInterface::class => DbWithdrawPixRepository::class,
+    WithdrawAttemptRepositoryInterface::class => DbWithdrawAttemptRepository::class
 ];
 

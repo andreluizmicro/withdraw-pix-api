@@ -9,12 +9,13 @@ use DateTimeImmutable;
 
 class Schedule
 {
+    private bool $scheduled = false;
+
     /**
      * @throws ScheduleException
      */
     public function __construct(
-      private ?bool $scheduled = false,
-      private ?DateTimeImmutable $scheduledFor = null,
+      private ?DateTimeImmutable $date = null,
     ) {
         $this->validate();
     }
@@ -24,32 +25,31 @@ class Schedule
      */
     public function validate(): void
     {
-        if (! $this->scheduled) {
+        if ($this->date === null) {
             return;
-        }
-
-        if ($this->scheduledFor === null) {
-            throw ScheduleException::scheduledRequired();
         }
 
         $now = new DateTimeImmutable();
         $maxDate = $now->modify('+7 days');
 
-        if ($this->scheduledFor < $now) {
+        if ($this->date < $now) {
             throw ScheduleException::scheduledInPast();
         }
 
-        if ($this->scheduledFor > $maxDate) {
+        if ($this->date > $maxDate) {
             throw ScheduleException::scheduledTooFarInFuture();
         }
+
+        $this->scheduled = true;
+    }
+
+    public function date(): ?DateTimeImmutable
+    {
+        return $this->date;
     }
 
     public function scheduled(): bool
     {
         return $this->scheduled;
-    }
-
-    public function scheduledFor(): ?DateTimeImmutable {
-        return $this->scheduledFor;
     }
 }

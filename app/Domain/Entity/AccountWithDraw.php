@@ -17,9 +17,9 @@ class AccountWithdraw
         private WithdrawMethod $method,
         private AmountWithdraw $amount,
         private Schedule $schedule,
-        private bool $done,
-        private bool $error,
-        private string $errorReason,
+        private ?bool $done = true,
+        private ?bool $error = false,
+        private ?string $errorReason = null,
     ) {
     }
 
@@ -58,7 +58,7 @@ class AccountWithdraw
         return $this->error;
     }
 
-    public function errorReason(): string
+    public function errorReason(): ?string
     {
         return $this->errorReason;
     }
