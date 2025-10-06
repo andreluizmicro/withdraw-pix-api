@@ -61,18 +61,6 @@ class WithdrawQueueConsumer extends ConsumerMessage
 
         $account = $this->accountRepository->findById($accountWithdraw->accountId()->value);
 
-        $this->notification->sendEmail(
-            email: $accountWithdrawPix->key()->value(),
-            data: [
-                'account_name' => $account->name()->value,
-                'amount' => Money::formatToBRL($accountWithdraw->amount()->value()),
-                'pix_key' => $accountWithdrawPix->key()->value(),
-                'pix_type' => $accountWithdrawPix->type()->value(),
-                'date' => (new DateTimeImmutable())->format('d/m/Y H:i:s'),
-            ],
-            template: EmailTemplate::WITHDRAW_PIX_MAIL->value,
-        );
-
         $this->sendNotification($accountWithdraw, $accountWithdrawPix, $account);
 
         return Result::ACK;
@@ -93,10 +81,10 @@ class WithdrawQueueConsumer extends ConsumerMessage
                     email: $accountWithdrawPix->key()->value(),
                     data: [
                         'account_name' => $account->name()->value,
-                        'amount' => Money::formatToBRL($accountWithdraw->amount()->value()),
+                        'amount' => $accountWithdraw->amount()->value(),
                         'pix_key' => $accountWithdrawPix->key()->value(),
                         'pix_type' => $accountWithdrawPix->type()->value(),
-                        'date' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
+                        'date_time' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
                     ],
                     template: EmailTemplate::WITHDRAW_PIX_MAIL->value,
                 );

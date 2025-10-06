@@ -6,5 +6,5 @@ namespace App\Infrastructure\Enum;
 
 enum EmailTemplate: string
 {
-    case WITHDRAW_PIX_MAIL = 'infrastructure.notification.email.template.withdraw_pix';
+    case WITHDRAW_PIX_MAIL = 'mail.html.withdraw';
 }

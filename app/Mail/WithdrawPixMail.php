@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Domain\Helper\Money;
 use FriendsOfHyperf\Mail\Mailable;
 use FriendsOfHyperf\Mail\Mailable\Content;
 use FriendsOfHyperf\Mail\Mailable\Envelope;
@@ -26,10 +27,10 @@ class WithdrawPixMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: $this->template,
+            view:  $this->template,
             with: [
                 'account_name' => $this->accountName,
-                'amount' => $this->amount,
+                'amount' => Money::formatToBRL($this->amount),
                 'pixKey' => $this->pixKey,
                 'type' => $this->type,
                 'date_time' => $this->dateTime,
