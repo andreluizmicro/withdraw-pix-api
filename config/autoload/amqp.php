@@ -5,7 +5,7 @@ declare(strict_types=1);
 use function Hyperf\Support\env;
 
 return [
-    'default' => [
+    'amqp' => [
         'host' => env('AMQP_HOST', 'localhost'),
         'port' => (int) env('AMQP_PORT', 5672),
         'user' => env('AMQP_USER', 'guest'),

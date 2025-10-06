@@ -11,15 +11,13 @@ use App\Domain\ValueObject\Uuid;
 
 class AccountWithdraw
 {
+
     public function __construct(
         private Uuid $id,
         private Uuid $accountId,
         private WithdrawMethod $method,
         private AmountWithdraw $amount,
         private Schedule $schedule,
-        private ?bool $done = true,
-        private ?bool $error = false,
-        private ?string $errorReason = null,
     ) {
     }
 
@@ -46,20 +44,5 @@ class AccountWithdraw
     public function schedule(): Schedule
     {
         return $this->schedule;
-    }
-
-    public function done(): bool
-    {
-        return $this->done;
-    }
-
-    public function error(): bool
-    {
-        return $this->error;
-    }
-
-    public function errorReason(): ?string
-    {
-        return $this->errorReason;
     }
 }

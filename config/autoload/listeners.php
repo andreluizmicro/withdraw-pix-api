@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Infrastructure\Listener\AccountWithdrawCreatedListener;
+use App\Infrastructure\Listener\AccountWithdrawErrorListener;
 use Hyperf\Command\Listener\FailToHandleListener;
 use Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler;
 
@@ -10,4 +11,5 @@ return [
     ErrorExceptionHandler::class,
     FailToHandleListener::class,
     AccountWithdrawCreatedListener::class,
+    AccountWithdrawErrorListener::class,
 ];
