@@ -11,4 +11,9 @@ interface WithdrawRepositoryInterface
     public function create(AccountWithdraw $accountWithdraw): void;
 
     public function findById(string $id): ?AccountWithdraw;
+
+    /**
+     * @return AccountWithdraw[]
+     */
+    public function findScheduledPix(?int $limit = 1000): array;
 }

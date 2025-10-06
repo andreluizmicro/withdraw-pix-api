@@ -12,5 +12,5 @@ abstract class Producer extends AbstractRabbitMQ
     /**
      * @throws Exception
      */
-    abstract public function produce(array $payload, string $exchange): void;
+    abstract public function produce(array $payload, ?string $exchange = ''): void;
 }

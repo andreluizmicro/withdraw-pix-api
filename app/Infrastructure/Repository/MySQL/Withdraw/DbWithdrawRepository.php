@@ -14,8 +14,10 @@ use App\Domain\Repository\Withdraw\WithdrawRepositoryInterface;
 use App\Domain\ValueObject\AmountWithdraw;
 use App\Domain\ValueObject\Schedule;
 use App\Domain\ValueObject\Uuid;
+use DateTimeImmutable;
 use Hyperf\DbConnection\Db;
 use Throwable;
+use function Swoole\Coroutine\Http\get;
 
 class DbWithdrawRepository implements WithdrawRepositoryInterface
 {
@@ -37,7 +39,7 @@ class DbWithdrawRepository implements WithdrawRepositoryInterface
                     'method' => $accountWithdraw->method()->value,
                     'amount' => $accountWithdraw->amount()->value(),
                     'scheduled' => $accountWithdraw->schedule()->scheduled(),
-                    'scheduled_for' => $accountWithdraw->schedule()->date(),
+                    'scheduled_for' => $accountWithdraw->schedule()->date()?->format('Y-m-d H:i:s'),
                 ]);
         } catch (Throwable $throwable) {
             throw new AccountWithdrawException('Error creating withdraw', previous: $throwable);
@@ -59,12 +61,47 @@ class DbWithdrawRepository implements WithdrawRepositoryInterface
             return null;
         }
 
+        $date = $accountWithdrawDb->scheduled_for
+            ? new DateTimeImmutable( $accountWithdrawDb->scheduled_for)
+            : null;
+
         return new AccountWithdraw(
             id: new Uuid($accountWithdrawDb->id),
             accountId: new Uuid($accountWithdrawDb->account_id),
             method: WithdrawMethod::from($accountWithdrawDb->method),
             amount: new AmountWithdraw((float) $accountWithdrawDb->amount),
-            schedule: new Schedule($accountWithdrawDb->scheduled_for),
+            schedule: new Schedule($date),
         );
+    }
+
+    /**
+     * @param int|null $limit
+     * @return AccountWithdraw[]
+     * @throws AmountWithdrawException
+     * @throws ScheduleException
+     * @throws UuidException
+     * @throws \DateMalformedStringException
+     */
+    public function findScheduledPix(?int $limit = 1000): array
+    {
+         $withdrawList = $this->database->table('account_withdraw')
+            ->where('scheduled', true)
+            ->orderBy('created_at')
+            ->limit($limit)
+            ->get()->toArray();
+
+        return array_map(/**
+         * @throws UuidException
+         * @throws ScheduleException
+         * @throws AmountWithdrawException
+         */ fn($withdraw) => new AccountWithdraw(
+            id: new Uuid($withdraw->id),
+            accountId: new Uuid($withdraw->account_id),
+            method: WithdrawMethod::from($withdraw->method),
+            amount: new AmountWithdraw((float) $withdraw->amount),
+            schedule: new Schedule(
+                date: $withdraw->scheduled_for ? new DateTimeImmutable($withdraw->scheduled_for) : null,
+            ),
+        ), $withdrawList);
     }
 }

@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Broker\RabbitMQ\Producer;
 
-use Exception;
 use PhpAmqpLib\Message\AMQPMessage;
 
-class AccountWithdrawProducer extends Producer
+class SendScheduledPixToQueueProducer extends Producer
 {
-    private const QUEUE_NAME = 'withdraw_queue';
+    private const QUEUE_NAME = 'scheduled_pix_queue';
 
-    /**
-     * @throws Exception
-     */
     public function produce(array $payload, ?string $exchange = ''): void
     {
         $message = new AMQPMessage(json_encode($payload), [

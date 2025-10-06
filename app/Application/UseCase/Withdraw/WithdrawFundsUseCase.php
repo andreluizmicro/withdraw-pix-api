@@ -7,13 +7,18 @@ namespace App\Application\UseCase\Withdraw;
 use App\Application\DTO\Withdraw\CreateWithdrawErrorInputDTO;
 use App\Application\DTO\Withdraw\CreateWithdrawInputDTO;
 use App\Domain\Adapter\UnitOfWorkAdapterInterface;
+use App\Domain\Entity\Account;
 use App\Domain\Entity\AccountWithdraw;
 use App\Domain\Entity\AccountWithDrawPix;
 use App\Domain\Enum\WithdrawMethod;
 use App\Domain\Event\Withdraw\AccountWithdrawPixCreatedEvent;
 use App\Domain\Event\Withdraw\AccountWithdrawPixErrorEvent;
+use App\Domain\Exception\AmountWithdrawException;
 use App\Domain\Exception\DomainError;
 use App\Domain\Exception\Handler\Account\AccountNotFoundException;
+use App\Domain\Exception\ScheduleException;
+use App\Domain\Exception\UuidException;
+use App\Domain\Exception\WithDrawPixException;
 use App\Domain\Repository\Account\AccountRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawPixRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawRepositoryInterface;
@@ -51,31 +56,14 @@ class WithdrawFundsUseCase
                 throw new AccountNotFoundException();
             }
 
-            $accountWithdraw = new AccountWithdraw(
-                id: Uuid::random(),
-                accountId: $account->id(),
-                method: WithdrawMethod::tryFrom($inputDTO->method),
-                amount: New AmountWithdraw($inputDTO->amount),
-                schedule: new Schedule(
-                    date: is_null($inputDTO->schedule) ? null : new DateTimeImmutable($inputDTO->schedule),
-                ),
-            );
+            $accountWithdraw = $this->createWithdraw($inputDTO, $account);
 
-            $pixType = new PixType($inputDTO->pixType);
+            $accountWithDrawPix = $this->CreateWithdrawPix($accountWithdraw, $inputDTO);
 
-            $accountWithDrawPix = new AccountWithdrawPix(
-                id: Uuid::random(),
-                accountWithdrawId: $accountWithdraw->id(),
-                type: $pixType,
-                key: new PixKey(
-                    type: $pixType,
-                    key: $inputDTO->pixKey,
-                ),
-            );
-
-            $account->subtract($accountWithdraw->amount()->value());
-
-            $this->accountRepository->update($account);
+            if ($accountWithdraw->schedule()->scheduled() === false) {
+                $account->subtract($accountWithdraw->amount()->value());
+                $this->accountRepository->update($account);
+            }
 
             $this->withdrawRepository->create($accountWithdraw);
 
@@ -89,7 +77,6 @@ class WithdrawFundsUseCase
 
             $this->unitOfWorkAdapter->commit();
         } catch (Throwable $exception) {
-            var_dump($exception);
             $this->eventDispatcher->dispatch(new AccountWithdrawPixErrorEvent(
                 new CreateWithdrawErrorInputDTO(
                     id: Uuid::random()->value,
@@ -105,5 +92,44 @@ class WithdrawFundsUseCase
 
             throw new DomainError($exception->getMessage());
         }
+    }
+
+    /**
+     * @throws AmountWithdrawException
+     * @throws UuidException
+     * @throws ScheduleException
+     */
+    private function createWithdraw(CreateWithdrawInputDTO $inputDTO, Account $account): AccountWithdraw
+    {
+        return new AccountWithdraw(
+            id: Uuid::random(),
+            accountId: $account->id(),
+            method: WithdrawMethod::tryFrom($inputDTO->method),
+            amount: New AmountWithdraw($inputDTO->amount),
+            schedule: new Schedule(
+                date: is_null($inputDTO->schedule) ? null : new DateTimeImmutable($inputDTO->schedule),
+            ),
+        );
+    }
+
+    /**
+     * @throws UuidException
+     * @throws WithDrawPixException
+     */
+    private function createWithdrawPix(
+        AccountWithdraw $accountWithdraw,
+        CreateWithdrawInputDTO $inputDTO
+    ): AccountWithDrawPix {
+        $pixType = new PixType($inputDTO->pixType);
+
+        return new AccountWithdrawPix(
+            id: Uuid::random(),
+            accountWithdrawId: $accountWithdraw->id(),
+            type: $pixType,
+            key: new PixKey(
+                type: $pixType,
+                key: $inputDTO->pixKey,
+            ),
+        );
     }
 }

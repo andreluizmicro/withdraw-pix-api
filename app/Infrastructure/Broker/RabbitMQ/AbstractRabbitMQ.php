@@ -8,25 +8,27 @@ use App\Infrastructure\Factory\RabbitMQFactory;
 use Exception;
 use Hyperf\Contract\ConfigInterface;
 use InvalidArgumentException;
+use PhpAmqpLib\Channel\AbstractChannel;
+use PhpAmqpLib\Channel\AMQPChannel;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
 
 abstract class AbstractRabbitMQ
 {
-    protected $connection;
-
+    protected ?AMQPStreamConnection $connection = null;
     protected $channel;
 
-    protected ConfigInterface $config;
+    public function __construct(private ConfigInterface $config)
+    {
+    }
 
     /**
      * @throws Exception
      */
-    public function initialize(ConfigInterface $config): void
+    public function getChannel(): AbstractChannel|AMQPChannel
     {
         if ($this->connection) {
-            return;
+            return $this->connection->channel();
         }
-
-        $this->config = $config;
 
         $config = $this->config->get('amqp.default');
 
@@ -36,6 +38,6 @@ abstract class AbstractRabbitMQ
 
         $this->connection = RabbitMQFactory::createConnection($config);
 
-        $this->channel = $this->connection->channel();
+        return $this->connection->channel();
     }
 }
