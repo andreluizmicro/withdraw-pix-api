@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Broker\Producer\RabbitMQ;
+namespace App\Infrastructure\Broker\RabbitMQ;
 
 use App\Infrastructure\Factory\RabbitMQFactory;
 use Exception;
 use Hyperf\Contract\ConfigInterface;
 use InvalidArgumentException;
 
-abstract class RabbitMQProducer
+abstract class AbstractRabbitMQ
 {
-    protected $connection = null;
+    protected $connection;
 
-    protected $channel = null;
+    protected $channel;
 
     protected ConfigInterface $config;
 
@@ -28,7 +28,7 @@ abstract class RabbitMQProducer
 
         $this->config = $config;
 
-        $config = $this->config->get('amqp');
+        $config = $this->config->get('amqp.default');
 
         if (empty($config)) {
             throw new InvalidArgumentException('config not found');
@@ -38,9 +38,4 @@ abstract class RabbitMQProducer
 
         $this->channel = $this->connection->channel();
     }
-
-    /**
-     * @throws Exception
-     */
-    abstract public function produce(array $payload, string $destination): void;
 }

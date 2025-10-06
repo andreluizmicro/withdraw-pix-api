@@ -31,7 +31,7 @@ class WithdrawFundsUseCase
     public function __construct(
         private readonly AccountRepositoryInterface $accountRepository,
         private readonly WithdrawRepositoryInterface $withdrawRepository,
-        private WithdrawPixRepositoryInterface $withdrawPixRepository,
+        private readonly WithdrawPixRepositoryInterface $withdrawPixRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly UnitOfWorkAdapterInterface $unitOfWorkAdapter,
     ) {
@@ -89,6 +89,7 @@ class WithdrawFundsUseCase
 
             $this->unitOfWorkAdapter->commit();
         } catch (Throwable $exception) {
+            var_dump($exception);
             $this->eventDispatcher->dispatch(new AccountWithdrawPixErrorEvent(
                 new CreateWithdrawErrorInputDTO(
                     id: Uuid::random()->value,

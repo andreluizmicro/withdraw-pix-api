@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Listener;
 
 use App\Domain\Event\Withdraw\AccountWithdrawPixCreatedEvent;
-use App\Infrastructure\Broker\Producer\RabbitMQ\AccountWithdrawProducer;
+use App\Infrastructure\Broker\RabbitMQ\Producer\AccountWithdrawProducer;
 use App\Infrastructure\Enum\Exchange;
 use Exception;
 use Hyperf\Event\Contract\ListenerInterface;
@@ -36,7 +36,7 @@ readonly class AccountWithdrawCreatedListener implements ListenerInterface
 
         $this->accountWithdrawProducer->produce(
             payload: $event->getProperties(),
-            destination: Exchange::ACCOUNT_WITHDRAW->value,
+            exchange: Exchange::ACCOUNT_WITHDRAW->value,
         );
     }
 }

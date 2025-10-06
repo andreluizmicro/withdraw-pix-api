@@ -14,14 +14,12 @@ class RabbitMQFactory
      */
     public static function createConnection(array $configs): AMQPStreamConnection
     {
-        $amqp = $configs['amqp'];
-
         return new AMQPStreamConnection(
-            host: $amqp['host'],
-            port: $amqp['port'],
-            user: $amqp['user'],
-            password: $amqp['password'],
-            vhost: $amqp['vhost'],
+            host: $configs['host'],
+            port: $configs['port'],
+            user: $configs['user'],
+            password: $configs['password'],
+            vhost: $configs['vhost'],
         );
     }
 }

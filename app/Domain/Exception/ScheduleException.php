@@ -16,7 +16,7 @@ class ScheduleException extends DomainError
         return new self('Scheduled date cannot in the past');
     }
 
-    public static function ScheduledTooFarInFuture(): self
+    public static function scheduledTooFarInFuture(): self
     {
         return new self('Scheduled date cannot be more than 7 days in the future');
     }
