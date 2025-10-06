@@ -13,6 +13,7 @@
     "license": "Apache-2.0",
     "require": {
         "php": ">=8.2",
+        "friendsofhyperf/mail": "^3.1",
         "hyperf/amqp": "~3.1.0",
         "hyperf/async-queue": "~3.1.0",
         "hyperf/cache": "~3.1.0",

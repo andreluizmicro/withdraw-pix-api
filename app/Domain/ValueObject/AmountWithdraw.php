@@ -21,7 +21,7 @@ class AmountWithdraw
         }
     }
 
-    public function isValid(): bool
+    private function isValid(): bool
     {
         return $this->value >= self::MIN_WITHDRAW_AMOUNT;
     }

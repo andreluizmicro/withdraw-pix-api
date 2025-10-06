@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Enum;
 
-enum Exchanges: string
+enum Exchange: string
 {
     case ACCOUNT_WITHDRAW = 'account.withdraw';
 }

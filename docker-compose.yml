@@ -11,6 +11,8 @@ services:
     environment:
       - APP_ENV=dev
       - SCAN_CACHEABLE=false
+    depends_on:
+      - rabbitmq
     networks:
       - withdraw-pix-api
 
@@ -45,11 +47,22 @@ services:
     networks:
       - withdraw-pix-api
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: withdraw-pix-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - withdraw-pix-api
+
   redis:
     container_name: withdraw-pix-redis
     image: redis
     ports:
-      - 6379:6379
+      - "6379:6379"
+    networks:
+      - withdraw-pix-api
 
 networks:
   withdraw-pix-api:

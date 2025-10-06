@@ -11,7 +11,6 @@ use App\Domain\ValueObject\Uuid;
 
 class AccountWithdraw
 {
-
     public function __construct(
         private Uuid $id,
         private Uuid $accountId,

@@ -8,9 +8,6 @@ use App\Infrastructure\Factory\RabbitMQFactory;
 use Exception;
 use Hyperf\Contract\ConfigInterface;
 use InvalidArgumentException;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 
 abstract class RabbitMQProducer
 {
@@ -18,20 +15,20 @@ abstract class RabbitMQProducer
 
     protected $channel = null;
 
+    protected ConfigInterface $config;
+
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      * @throws Exception
      */
-    public function __construct(
-        protected readonly ContainerInterface $container,
-    )
+    public function initialize(ConfigInterface $config): void
     {
         if ($this->connection) {
             return;
         }
 
-        $config = $this->container->get(ConfigInterface::class)->get('amqp');
+        $this->config = $config;
+
+        $config = $this->config->get('amqp');
 
         if (empty($config)) {
             throw new InvalidArgumentException('config not found');

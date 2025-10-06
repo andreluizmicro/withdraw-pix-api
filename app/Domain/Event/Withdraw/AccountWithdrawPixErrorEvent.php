@@ -8,7 +8,7 @@ use App\Application\DTO\Withdraw\CreateWithdrawErrorInputDTO;
 use App\Domain\Enum\EventCategory;
 use App\Domain\Enum\Events;
 
-class AccountWithdrawErrorEvent  extends AccountWithdrawEvent
+class AccountWithdrawPixErrorEvent  extends AccountWithdrawEvent
 {
     public function __construct(
       private readonly CreateWithdrawErrorInputDTO $inputDTO,

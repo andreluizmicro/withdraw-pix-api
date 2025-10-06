@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Repository\Withdraw;
 
+use App\Domain\Entity\AccountWithdraw;
+
 interface WithdrawRepositoryInterface
 {
-    public function create();
+    public function create(AccountWithdraw $accountWithdraw): void;
 }

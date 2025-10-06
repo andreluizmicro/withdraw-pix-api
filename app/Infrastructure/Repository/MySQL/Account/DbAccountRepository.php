@@ -6,7 +6,6 @@ namespace App\Infrastructure\Repository\MySQL\Account;
 
 use App\Domain\Entity\Account;
 use App\Domain\Exception\BalanceException;
-use App\Domain\Exception\Handler\Account\AccountNotFoundException;
 use App\Domain\Exception\Handler\Account\CreateAccountException;
 use App\Domain\Exception\NameException;
 use App\Domain\Exception\UpdateAccountException;
@@ -16,7 +15,6 @@ use App\Domain\ValueObject\Balance;
 use App\Domain\ValueObject\Name;
 use App\Domain\ValueObject\Uuid;
 use Exception;
-use http\Exception\RuntimeException;
 use Hyperf\DbConnection\Db;
 use Throwable;
 

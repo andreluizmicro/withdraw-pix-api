@@ -19,6 +19,13 @@ class CreateWithdrawErrorInputDTO
     ) {
     }
 
+    public function fromArray(array $data): self
+    {
+        return new self(
+            id: $data['id'],
+        );
+    }
+
     public function toArray(): array
     {
         return [

@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\Domain\Event\Withdraw;
 
 use App\Domain\Entity\AccountWithdraw;
+use App\Domain\Entity\AccountWithDrawPix;
 use App\Domain\Enum\EventCategory;
 use App\Domain\Enum\Events;
 
-class AccountWithdrawCreatedEvent extends AccountWithdrawEvent
+class AccountWithdrawPixCreatedEvent extends AccountWithdrawEvent
 {
     public function __construct(
         public readonly AccountWithdraw $accountWithdraw,
+        public readonly AccountWithdrawPix $accountWithdrawPix,
     ) {
     }
 

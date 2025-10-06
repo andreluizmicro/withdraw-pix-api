@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Listener;
 
-use App\Domain\Event\Withdraw\AccountWithdrawErrorEvent;
+use App\Domain\Event\Withdraw\AccountWithdrawPixErrorEvent;
 use App\Infrastructure\Broker\Producer\RabbitMQ\AccountWithdrawProducer;
-use App\Infrastructure\Enum\Exchanges;
+use App\Infrastructure\Enum\Exchange;
 use Exception;
 use Hyperf\Event\Contract\ListenerInterface;
 
@@ -21,7 +21,7 @@ readonly class AccountWithdrawErrorListener implements ListenerInterface
     public function listen(): array
     {
         return [
-            AccountWithdrawErrorEvent::class,
+            AccountWithdrawPixErrorEvent::class,
         ];
     }
 
@@ -30,13 +30,13 @@ readonly class AccountWithdrawErrorListener implements ListenerInterface
      */
     public function process(object $event): void
     {
-        if (! $event instanceof AccountWithdrawErrorEvent) {
+        if (! $event instanceof AccountWithdrawPixErrorEvent) {
             return;
         }
 
         $this->accountWithdrawProducer->produce(
             payload: $event->getProperties(),
-            destination: Exchanges::ACCOUNT_WITHDRAW->value,
+            destination: Exchange::ACCOUNT_WITHDRAW->value,
         );
     }
 }
