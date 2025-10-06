@@ -9,7 +9,6 @@ use App\Domain\Exception\BalanceException;
 use App\Domain\Exception\Handler\Account\AccountNotFoundException;
 use App\Domain\Exception\NameException;
 use App\Domain\Exception\UuidException;
-use App\Domain\Helper\Money;
 use App\Domain\Notification\NotificationInterface;
 use App\Domain\Repository\Account\AccountRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawPixRepositoryInterface;
@@ -30,8 +29,6 @@ use Throwable;
 )]
 class WithdrawQueueConsumer extends ConsumerMessage
 {
-    private int $remainingAttempts = 3;
-
     public function __construct(
         private readonly AccountRepositoryInterface $accountRepository,
         private readonly WithdrawRepositoryInterface $withdrawRepository,
@@ -75,7 +72,9 @@ class WithdrawQueueConsumer extends ConsumerMessage
         ?Account $account = null,
     ): void
     {
-        while ($this->remainingAttempts > 0) {
+        $remainingAttempts = 3;
+
+        while ($remainingAttempts > 0) {
             try {
                 $this->notification->sendEmail(
                     email: $accountWithdrawPix->key()->value(),
@@ -89,15 +88,15 @@ class WithdrawQueueConsumer extends ConsumerMessage
                     template: EmailTemplate::WITHDRAW_PIX_MAIL->value,
                 );
 
-                $this->remainingAttempts = 0;
-
-
+                $remainingAttempts = 0;
             } catch (Throwable $throwable) {
-                $this->remainingAttempts--;
+                $remainingAttempts--;
 
-                if ($this->remainingAttempts === 0) {
+                if ($remainingAttempts === 0) {
                     throw $throwable;
                 }
+
+                sleep(3);
             }
         }
     }

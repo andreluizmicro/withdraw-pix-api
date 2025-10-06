@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Service;
 
 use App\Domain\Notification\NotificationInterface;
-use App\Mail\WithdrawPixMail;
+use App\Infrastructure\Notification\Mail\WithdrawPixMail;
 use FriendsOfHyperf\Mail\Facade\Mail;
 
 class NotificationService implements NotificationInterface
