@@ -30,15 +30,8 @@ class AccountWithdrawPixCreatedEvent extends AccountWithdrawEvent
     public function getProperties(): array
     {
         return [
-            'id' => $this->accountWithdraw->id(),
-            'account_id' => $this->accountWithdraw->accountId(),
-            'method' => $this->accountWithdraw->method()->value,
-            'amount' => $this->accountWithdraw->amount()->value(),
-            'scheduled' => $this->accountWithdraw->schedule()->scheduled(),
-            'scheduled_for' => $this->accountWithdraw->schedule()->date(),
-            'done' => true,
-            'error' => false,
-            'error_reason' => null,
+            'event_name' => $this->getName(),
+            'account_withdraw_pix_id' => $this->accountWithdrawPix->id(),
         ];
     }
 }

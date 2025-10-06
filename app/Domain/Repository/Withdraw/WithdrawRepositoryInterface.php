@@ -9,4 +9,6 @@ use App\Domain\Entity\AccountWithdraw;
 interface WithdrawRepositoryInterface
 {
     public function create(AccountWithdraw $accountWithdraw): void;
+
+    public function findById(string $id): ?AccountWithdraw;
 }

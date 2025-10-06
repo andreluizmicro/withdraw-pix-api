@@ -9,4 +9,6 @@ use App\Domain\Entity\AccountWithDrawPix;
 interface WithdrawPixRepositoryInterface
 {
     public function create(AccountWithDrawPix $accountWithdrawPix): void;
+
+    public function findById(string $id): ?AccountWithDrawPix;
 }
