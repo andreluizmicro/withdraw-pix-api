@@ -1,63 +1,116 @@
-# Introduction
+# Withdraw PIX API
 
-This is a skeleton application using the Hyperf framework. This application is meant to be used as a starting place for those looking to get their feet wet with Hyperf Framework.
+API responsável por realizar o transações PIX.
 
-# Requirements
 
-Hyperf has some requirements for the system environment, it can only run under Linux and Mac environment, but due to the development of Docker virtualization technology, Docker for Windows can also be used as the running environment under Windows.
+## Sumário
 
-The various versions of Dockerfile have been prepared for you in the [hyperf/hyperf-docker](https://github.com/hyperf/hyperf-docker) project, or directly based on the already built [hyperf/hyperf](https://hub.docker.com/r/hyperf/hyperf) Image to run.
+- [Tecnologias usandas](#tecnologias-usadas)
+- [Arquitetura](#arquitetura)
+- [Diagrama C4](#diagrama-c4)
+- [Fluxo de mensageria](#fluxo-de-mensageria)
+- [Rodando o projeto](#rodando-o-projeto)
+- [Endpoints](#endpoints)
 
-When you don't want to use Docker as the basis for your running environment, you need to make sure that your operating environment meets the following requirements:  
 
- - PHP >= 8.1
- - Any of the following network engines
-   - Swoole PHP extension >= 5.0，with `swoole.use_shortname` set to `Off` in your `php.ini`
-   - Swow PHP extension >= 1.3
- - JSON PHP extension
- - Pcntl PHP extension
- - OpenSSL PHP extension （If you need to use the HTTPS）
- - PDO PHP extension （If you need to use the MySQL Client）
- - Redis PHP extension （If you need to use the Redis Client）
- - Protobuf PHP extension （If you need to use the gRPC Server or Client）
+### Tecnologias usadas
 
-# Installation using Composer
+- `Hyperf/PHP`: API densenvolvida com o framework Hyperf
+- `RabbitMQ`: Usanda para armazenar todos os eventos de sucesso e erro garantindo maior entrega de notificação.
+- `MailHog` Serviço para notificação das transações via e-mail.
 
-The easiest way to create a new Hyperf project is to use [Composer](https://getcomposer.org/). If you don't have it already installed, then please install as per [the documentation](https://getcomposer.org/download/).
+### Arquitetura
 
-To create your new Hyperf project:
+### Diagrama C4
 
-```bash
-composer create-project hyperf/withdraw-pix-api path/to/install
+<img src="./docs/diagrama-c4.png">
+
+### Fluxo de mensageria
+
+<img src="./docs/rabbitmq_flow.png">
+
+### Rodando o Projeto
+
+O projeto foi desenvolvido usando o `Docker` e para sua execução é necessário o `Docker` e `docker-compose` previamente
+instalados na maquina local.
+
+#### Buildando a aplicação
+
+Para realizar o build da aplicação basta rodar o comando abaixo:
+
+```
+docker compose build
 ```
 
-If your development environment is based on Docker you can use the official Composer image to create a new Hyperf project:
+#### Para subir todos os containers da aplicação basta rodar o comando
 
-```bash
-docker run --rm -it -v $(pwd):/app composer create-project --ignore-platform-reqs hyperf/withdraw-pix-api path/to/install
+```
+docker compose up -d
 ```
 
-# Getting started
+O arquivo `.env.example` contém todas as variáveis necessárias para o funcionamento da aplicação.
 
-Once installed, you can run the server immediately using the command below.
+```
+APP_NAME=skeleton
+APP_ENV=dev
 
-```bash
-cd path/to/install
-php bin/hyperf.php start
+DB_DRIVER=mysql
+DB_HOST=withdraw-pix-db
+DB_PORT=3306
+DB_DATABASE=withdraw_pix
+DB_USERNAME=root
+DB_PASSWORD=root
+DB_CHARSET=utf8mb4
+DB_COLLATION=utf8mb4_unicode_ci
+DB_PREFIX=
+
+REDIS_HOST=redis
+REDIS_AUTH=(null)
+REDIS_PORT=6379
+REDIS_DB=0
+
+AMQP_HOST=rabbitmq
+RABBITMQ_QUEUE_CONNECTION=default
+AMQP_PORT=5672
+AMQP_USER=guest
+AMQP_PASSWORD=guest
+AMQP_VHOST=/
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailhog
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=""
+MAIL_FROM_ADDRESS="noreply@test.co"
+MAIL_FROM_NAME="${APP_NAME}"
 ```
 
-Or if in a Docker based environment you can use the `docker-compose.yml` provided by the template:
+### Endpoints
 
-```bash
-cd path/to/install
-docker-compose up
+Abaixo está disponibilizado o Curl dos endpoints da aplicação.
+
+- Endpoint facilitados para criação de contas 
+```
+curl --location 'http://localhost:9501/v1/account' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "JOSE Maria"
+}'
 ```
 
-This will start the cli-server on port `9501`, and bind it to all network interfaces. You can then visit the site at `http://localhost:9501/` which will bring up Hyperf default home page.
+- Endpoint para criação de uma nova transação
 
-## Hints
-
-- A nice tip is to rename `hyperf-skeleton` of files like `composer.json` and `docker-compose.yml` to your actual project name.
-- Take a look at `config/routes.php` and `app/Controller/IndexController.php` to see an example of a HTTP entrypoint.
-
-**Remember:** you can always replace the contents of this README.md file to something that fits your project description.
+```
+curl --location 'http://localhost:9501/v1/account/bc6d82f7-eaac-4694-8110-53bdd8fd633e/balance/withdraw' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "method": "PIX",
+    "pix": {
+        "type": "email",
+        "key": "andreluizmicro@gmail.com"
+    },
+    "amount": 24.00,
+    "schedule": "2025-10-08"
+}'
+``` 
