@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Application\Service\Notification\Email\WithdrawEmailNotificationService;
 use App\Domain\Adapter\UnitOfWorkAdapterInterface;
 use App\Domain\Notification\EmailNotificationInterface;
 use App\Domain\Repository\Account\AccountRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawPixRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawRepositoryInterface;
 use App\Infrastructure\Adapter\UnitOfWorkAdapter;
+use App\Infrastructure\Notification\MailHogNotification;
 use App\Infrastructure\Repository\MySQL\Account\DbAccountRepository;
 use App\Infrastructure\Repository\MySQL\Withdraw\DbWithdrawPixRepository;
 use App\Infrastructure\Repository\MySQL\Withdraw\DbWithdrawRepository;
@@ -23,6 +23,5 @@ return [
     UnitOfWorkAdapterInterface::class => UnitOfWorkAdapter::class,
 
     // Service
-    EmailNotificationInterface::class => WithdrawEmailNotificationService::class
+    EmailNotificationInterface::class => MailHogNotification::class
 ];
-

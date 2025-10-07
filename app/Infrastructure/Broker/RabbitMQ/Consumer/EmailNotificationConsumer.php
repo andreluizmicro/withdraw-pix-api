@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Broker\RabbitMQ\Consumer;
 
+use App\Application\Service\Notification\WithdrawEmailNotificationService;
+use App\Application\Service\Withdraw\ProcessWithdrawErrorService;
 use App\Domain\Exception\BalanceException;
-use App\Domain\Exception\Handler\Account\AccountNotFoundException;
 use App\Domain\Exception\NameException;
 use App\Domain\Exception\UuidException;
-use App\Domain\Notification\EmailNotificationInterface;
-use App\Domain\Repository\Account\AccountRepositoryInterface;
-use App\Domain\Repository\Withdraw\WithdrawPixRepositoryInterface;
-use App\Domain\Repository\Withdraw\WithdrawRepositoryInterface;
-use App\Infrastructure\Enum\EmailTemplate;
-use DateTimeImmutable;
 use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Message\ConsumerMessage;
 use Hyperf\Amqp\Result;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 #[Consumer(
@@ -29,15 +25,12 @@ use Throwable;
 class EmailNotificationConsumer extends ConsumerMessage
 {
     public function __construct(
-        private readonly AccountRepositoryInterface $accountRepository,
-        private readonly WithdrawRepositoryInterface $withdrawRepository,
-        private readonly WithdrawPixRepositoryInterface $withdrawPixRepository,
-        private readonly EmailNotificationInterface $notification,
-    ) {
-    }
+        private readonly WithdrawEmailNotificationService $notificationService,
+        private readonly ProcessWithdrawErrorService $processWithdrawErrorService,
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
-     * @throws AccountNotFoundException
      * @throws Throwable
      * @throws UuidException
      * @throws NameException
@@ -45,48 +38,23 @@ class EmailNotificationConsumer extends ConsumerMessage
      */
     public function consumeMessage($data, AMQPMessage $message): Result
     {
-        if (isset($data['error'])) {
-            $account = $this->accountRepository->findById($data['account_id']);
+        try {
+            if (isset($data['error'])) {
+                $this->processWithdrawErrorService->execute($data);
 
-            $this->notification->sendEmail(
-                email: $data['pix_key'],
-                data: [
-                    'account_name' => $account->name()->value,
-                    'amount' => $data['amount'],
-                    'pix_key' => $data['pix_key'],
-                    'pix_type' => $data['pix_type'],
-                    'date_time' => (new DateTimeImmutable())->format('d/m/Y H:i:s'),
-                ],
-                template: EmailTemplate::WITHDRAW_PIX_ERROR_MAIL,
-            );
+                $this->notificationService->notifyError($data);
+            } else {
+                $this->notificationService->notifySuccess($data);
+            }
 
             return Result::ACK;
+        } catch (Throwable $e) {
+            $this->logger->error('error processing message', [
+                'error' => $e->getMessage(),
+                'payload' => $data,
+            ]);
+
+            throw $e;
         }
-
-        $accountWithdrawPixIdReceived = $data['account_withdraw_pix_id']['value'];
-
-        $accountWithdrawPix = $this->withdrawPixRepository->findById($accountWithdrawPixIdReceived);
-
-        if ($accountWithdrawPix === null) {
-            throw new AccountNotFoundException();
-        }
-
-        $accountWithdraw = $this->withdrawRepository->findById($accountWithdrawPix->accountWithdrawId()->value);
-
-        $account = $this->accountRepository->findById($accountWithdraw->accountId()->value);
-
-        $this->notification->sendEmail(
-            email: $accountWithdrawPix->key()->value(),
-            data: [
-                'account_name' => $account->name()->value,
-                'amount' => $accountWithdraw->amount()->value(),
-                'pix_key' => $accountWithdrawPix->key()->value(),
-                'pix_type' => $accountWithdrawPix->type()->value(),
-                'date_time' => (new DateTimeImmutable())->format('d/m/Y H:i:s'),
-            ],
-            template: EmailTemplate::WITHDRAW_PIX_MAIL,
-        );
-
-        return Result::ACK;
     }
 }
