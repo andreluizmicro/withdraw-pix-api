@@ -6,7 +6,6 @@ namespace App\Infrastructure\Listener;
 
 use App\Domain\Event\Withdraw\AccountWithdrawPixErrorEvent;
 use App\Infrastructure\Broker\RabbitMQ\Producer\AccountWithdrawProducer;
-use App\Infrastructure\Enum\Exchange;
 use Exception;
 use Hyperf\Event\Contract\ListenerInterface;
 

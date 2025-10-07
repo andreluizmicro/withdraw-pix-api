@@ -77,20 +77,24 @@ class WithdrawFundsUseCase
 
             $this->unitOfWorkAdapter->commit();
         } catch (Throwable $exception) {
-            $this->eventDispatcher->dispatch(new AccountWithdrawPixErrorEvent(
-                new CreateWithdrawErrorInputDTO(
-                    id: Uuid::random()->value,
-                    accountId: $inputDTO->accountId,
-                    method: $inputDTO->method,
-                    pixType: $inputDTO->pixType,
-                    pixKey: $inputDTO->pixKey,
-                    amount: $inputDTO->amount,
-                    errorReason: $exception->getMessage(),
-                    scheduledFor: is_null($inputDTO->schedule) ? null : $inputDTO->schedule,
-                ),
-            ));
+            $createErrorDto = new CreateWithdrawErrorInputDTO(
+                id: Uuid::random()->value,
+                accountId: $inputDTO->accountId,
+                method: $inputDTO->method,
+                pixType: $inputDTO->pixType,
+                pixKey: $inputDTO->pixKey,
+                amount: $inputDTO->amount,
+                errorReason: $exception->getMessage(),
+                scheduledFor: is_null($inputDTO->schedule) ? null : $inputDTO->schedule,
+            );
+
+            $this->eventDispatcher->dispatch(new AccountWithdrawPixErrorEvent($createErrorDto));
 
             $this->unitOfWorkAdapter->rollback();
+
+            $this->withdrawRepository->createError($createErrorDto);
+
+            $this->withdrawPixRepository->createError($createErrorDto);
 
             throw new DomainError($exception->getMessage());
         }

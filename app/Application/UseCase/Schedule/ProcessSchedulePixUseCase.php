@@ -55,9 +55,14 @@ class ProcessSchedulePixUseCase
 
             $this->withdrawRepository->updateScheduledForToday($accountWithdraw->id()->value, true);
 
+            // notificar
+
             $this->unitOfWorkAdapter->commit();
         } catch (Throwable $exception) {
             $this->unitOfWorkAdapter->rollback();
+
+            // atualizar tabela
+            // notificar
 
             throw new DomainError($exception->getMessage());
         }
