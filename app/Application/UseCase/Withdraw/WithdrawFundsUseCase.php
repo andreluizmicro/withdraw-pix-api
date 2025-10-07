@@ -9,7 +9,7 @@ use App\Application\DTO\Withdraw\CreateWithdrawInputDTO;
 use App\Domain\Adapter\UnitOfWorkAdapterInterface;
 use App\Domain\Entity\Account;
 use App\Domain\Entity\AccountWithdraw;
-use App\Domain\Entity\AccountWithDrawPix;
+use App\Domain\Entity\AccountWithdrawPix;
 use App\Domain\Enum\WithdrawMethod;
 use App\Domain\Event\Withdraw\AccountWithdrawPixCreatedEvent;
 use App\Domain\Event\Withdraw\AccountWithdrawPixErrorEvent;
@@ -18,6 +18,7 @@ use App\Domain\Exception\DomainError;
 use App\Domain\Exception\Handler\Account\AccountNotFoundException;
 use App\Domain\Exception\ScheduleException;
 use App\Domain\Exception\UuidException;
+use App\Domain\Exception\WithdrawException;
 use App\Domain\Exception\WithDrawPixException;
 use App\Domain\Repository\Account\AccountRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawPixRepositoryInterface;
@@ -31,73 +32,49 @@ use DateTimeImmutable;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
-class WithdrawFundsUseCase
+final class WithdrawFundsUseCase
 {
     public function __construct(
         private readonly AccountRepositoryInterface $accountRepository,
         private readonly WithdrawRepositoryInterface $withdrawRepository,
         private readonly WithdrawPixRepositoryInterface $withdrawPixRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly UnitOfWorkAdapterInterface $unitOfWorkAdapter,
-    ) {
-    }
+        private readonly UnitOfWorkAdapterInterface $unitOfWork,
+    ) {}
 
     /**
      * @throws DomainError
      */
-    public function execute(CreateWithdrawInputDTO $inputDTO): void
+    public function execute(CreateWithdrawInputDTO $input): void
     {
-        $this->unitOfWorkAdapter->begin();
+        $this->unitOfWork->begin();
 
         try {
-            $account = $this->accountRepository->findById($inputDTO->accountId);
+            $account = $this->getAccountOrFail($input->accountId);
+            $withdraw = $this->buildWithdraw($input, $account);
+            $withdrawPix = $this->buildWithdrawPix($withdraw, $input);
 
-            if ($account === null) {
-                throw new AccountNotFoundException();
-            }
+            $this->processImmediateWithdraw($withdraw, $account);
 
-            $accountWithdraw = $this->createWithdraw($inputDTO, $account);
+            $this->persistEntities($withdraw, $withdrawPix);
+            $this->dispatchCreatedEvent($withdraw, $withdrawPix);
 
-            $accountWithDrawPix = $this->CreateWithdrawPix($accountWithdraw, $inputDTO);
-
-            if ($accountWithdraw->schedule()->scheduled() === false) {
-                $account->subtract($accountWithdraw->amount()->value());
-                $this->accountRepository->update($account);
-            }
-
-            $this->withdrawRepository->create($accountWithdraw);
-
-            $this->withdrawPixRepository->create($accountWithDrawPix);
-
-            $this->eventDispatcher->dispatch(
-                new AccountWithdrawPixCreatedEvent(
-                    $accountWithdraw,
-                    $accountWithDrawPix,
-                ));
-
-            $this->unitOfWorkAdapter->commit();
-        } catch (Throwable $exception) {
-            $createErrorDto = new CreateWithdrawErrorInputDTO(
-                id: Uuid::random()->value,
-                accountId: $inputDTO->accountId,
-                method: $inputDTO->method,
-                pixType: $inputDTO->pixType,
-                pixKey: $inputDTO->pixKey,
-                amount: $inputDTO->amount,
-                errorReason: $exception->getMessage(),
-                scheduledFor: is_null($inputDTO->schedule) ? null : $inputDTO->schedule,
-            );
-
-            $this->eventDispatcher->dispatch(new AccountWithdrawPixErrorEvent($createErrorDto));
-
-            $this->unitOfWorkAdapter->rollback();
-
-            $this->withdrawRepository->createError($createErrorDto);
-
-            $this->withdrawPixRepository->createError($createErrorDto);
-
-            throw new DomainError($exception->getMessage());
+            $this->unitOfWork->commit();
+        } catch (Throwable $e) {
+            $this->handleFailure($e, $input);
+            throw new DomainError($e->getMessage());
         }
+    }
+
+    private function getAccountOrFail(string $accountId): Account
+    {
+        $account = $this->accountRepository->findById($accountId);
+
+        if ($account === null) {
+            throw new AccountNotFoundException();
+        }
+
+        return $account;
     }
 
     /**
@@ -105,15 +82,15 @@ class WithdrawFundsUseCase
      * @throws UuidException
      * @throws ScheduleException
      */
-    private function createWithdraw(CreateWithdrawInputDTO $inputDTO, Account $account): AccountWithdraw
+    private function buildWithdraw(CreateWithdrawInputDTO $input, Account $account): AccountWithdraw
     {
         return new AccountWithdraw(
             id: Uuid::random(),
             accountId: $account->id(),
-            method: WithdrawMethod::tryFrom($inputDTO->method),
-            amount: New AmountWithdraw($inputDTO->amount),
+            method: WithdrawMethod::tryFrom($input->method),
+            amount: new AmountWithdraw($input->amount),
             schedule: new Schedule(
-                date: is_null($inputDTO->schedule) ? null : new DateTimeImmutable($inputDTO->schedule),
+                date: $input->schedule ? new DateTimeImmutable($input->schedule) : null,
             ),
         );
     }
@@ -122,20 +99,60 @@ class WithdrawFundsUseCase
      * @throws UuidException
      * @throws WithDrawPixException
      */
-    private function createWithdrawPix(
-        AccountWithdraw $accountWithdraw,
-        CreateWithdrawInputDTO $inputDTO
-    ): AccountWithDrawPix {
-        $pixType = new PixType($inputDTO->pixType);
+    private function buildWithdrawPix(AccountWithdraw $withdraw, CreateWithdrawInputDTO $input): AccountWithdrawPix
+    {
+        $pixType = new PixType($input->pixType);
 
         return new AccountWithdrawPix(
             id: Uuid::random(),
-            accountWithdrawId: $accountWithdraw->id(),
+            accountWithdrawId: $withdraw->id(),
             type: $pixType,
-            key: new PixKey(
-                type: $pixType,
-                key: $inputDTO->pixKey,
-            ),
+            key: new PixKey($pixType, $input->pixKey),
         );
+    }
+
+    /**
+     * @throws WithdrawException
+     */
+    private function processImmediateWithdraw(AccountWithdraw $withdraw, Account $account): void
+    {
+        if (!$withdraw->schedule()->scheduled()) {
+            $account->subtract($withdraw->amount()->value());
+            $this->accountRepository->update($account);
+        }
+    }
+
+    private function persistEntities(AccountWithdraw $withdraw, AccountWithdrawPix $withdrawPix): void
+    {
+        $this->withdrawRepository->create($withdraw);
+        $this->withdrawPixRepository->create($withdrawPix);
+    }
+
+    private function dispatchCreatedEvent(AccountWithdraw $withdraw, AccountWithdrawPix $withdrawPix): void
+    {
+        $this->eventDispatcher->dispatch(new AccountWithdrawPixCreatedEvent($withdraw, $withdrawPix));
+    }
+
+    /**
+     * @throws UuidException
+     */
+    private function handleFailure(Throwable $e, CreateWithdrawInputDTO $input): void
+    {
+        $this->unitOfWork->rollback();
+
+        $error = new CreateWithdrawErrorInputDTO(
+            id: Uuid::random()->value,
+            accountId: $input->accountId,
+            method: $input->method,
+            pixType: $input->pixType,
+            pixKey: $input->pixKey,
+            amount: $input->amount,
+            errorReason: $e->getMessage(),
+            scheduledFor: $input->schedule,
+        );
+
+        $this->withdrawRepository->createError($error);
+        $this->withdrawPixRepository->createError($error);
+        $this->eventDispatcher->dispatch(new AccountWithdrawPixErrorEvent($error));
     }
 }
