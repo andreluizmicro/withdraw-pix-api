@@ -82,6 +82,8 @@ class WithdrawFundsUseCase
                     id: Uuid::random()->value,
                     accountId: $inputDTO->accountId,
                     method: $inputDTO->method,
+                    pixType: $inputDTO->pixType,
+                    pixKey: $inputDTO->pixKey,
                     amount: $inputDTO->amount,
                     errorReason: $exception->getMessage(),
                     scheduledFor: is_null($inputDTO->schedule) ? null : $inputDTO->schedule,

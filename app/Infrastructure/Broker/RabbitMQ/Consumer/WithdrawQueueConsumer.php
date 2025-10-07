@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Broker\RabbitMQ\Consumer;
 
+use App\Application\DTO\Withdraw\CreateWithdrawErrorInputDTO;
 use App\Domain\Entity\Account;
 use App\Domain\Entity\AccountWithdraw;
 use App\Domain\Entity\AccountWithDrawPix;
@@ -13,6 +14,7 @@ use App\Domain\Notification\NotificationInterface;
 use App\Domain\Repository\Account\AccountRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawPixRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawRepositoryInterface;
+use App\Domain\ValueObject\Uuid;
 use App\Infrastructure\Enum\EmailTemplate;
 use DateTimeImmutable;
 use Hyperf\Amqp\Annotation\Consumer;
@@ -46,6 +48,10 @@ class WithdrawQueueConsumer extends ConsumerMessage
      */
     public function consumeMessage($data, AMQPMessage $message): Result
     {
+        if ($data['error']) {
+            $this->createWithdrawError(CreateWithdrawErrorInputDTO::fromArray($data));
+        }
+
         $accountWithdrawPixIdReceived = $data['account_withdraw_pix_id']['value'];
 
         $accountWithdrawPix = $this->withdrawPixRepository->findById($accountWithdrawPixIdReceived);
@@ -61,6 +67,16 @@ class WithdrawQueueConsumer extends ConsumerMessage
         $this->sendNotification($accountWithdraw, $accountWithdrawPix, $account);
 
         return Result::ACK;
+    }
+
+    /**
+     * @throws UuidException
+     */
+    private function createWithdrawError(CreateWithdrawErrorInputDTO $createErrorDTO): void
+    {
+        $this->withdrawRepository->createError($createErrorDTO);
+
+        $this->withdrawPixRepository->createError($createErrorDTO);
     }
 
     /**

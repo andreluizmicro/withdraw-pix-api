@@ -36,7 +36,6 @@ readonly class AccountWithdrawErrorListener implements ListenerInterface
 
         $this->accountWithdrawProducer->produce(
             payload: $event->getProperties(),
-            exchange: Exchange::ACCOUNT_WITHDRAW->value,
         );
     }
 }

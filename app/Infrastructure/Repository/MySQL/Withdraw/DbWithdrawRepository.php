@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Repository\MySQL\Withdraw;
 
+use App\Application\DTO\Withdraw\CreateWithdrawErrorInputDTO;
 use App\Domain\Entity\AccountWithdraw;
 use App\Domain\Enum\WithdrawMethod;
 use App\Domain\Exception\AmountWithdrawException;
@@ -43,6 +44,22 @@ class DbWithdrawRepository implements WithdrawRepositoryInterface
         } catch (Throwable $throwable) {
             throw new AccountWithdrawException('Error creating withdraw', previous: $throwable);
         }
+    }
+
+    public function createError(CreateWithdrawErrorInputDTO $errorDTO): void
+    {
+        $this->database->table('account_withdraw')
+            ->insert([
+                'id' => $errorDTO->id,
+                'account_id' => $errorDTO->accountId,
+                'method' => $errorDTO->method,
+                'amount' => $errorDTO->amount,
+                'scheduled' => $errorDTO->scheduled,
+                'scheduled_for' => $errorDTO->scheduledFor,
+                'done' => $errorDTO->done,
+                'error' => $errorDTO->error,
+                'error_reason' => $errorDTO->errorReason,
+            ]);
     }
 
     /**

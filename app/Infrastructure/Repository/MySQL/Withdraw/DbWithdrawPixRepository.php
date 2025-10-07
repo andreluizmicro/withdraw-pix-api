@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Repository\MySQL\Withdraw;
 
+use App\Application\DTO\Withdraw\CreateWithdrawErrorInputDTO;
 use App\Domain\Entity\AccountWithDrawPix;
 use App\Domain\Exception\Handler\Account\AccountWithdrawException;
 use App\Domain\Exception\UuidException;
@@ -38,6 +39,17 @@ class DbWithdrawPixRepository implements WithdrawPixRepositoryInterface
         } catch (Throwable $throwable) {
             throw new AccountWithdrawException('Error creating withdraw', previous: $throwable);
         }
+    }
+
+    public function createError(CreateWithdrawErrorInputDTO $createWithdrawErrorInputDTO): void
+    {
+        $this->database->table('account_withdraw_pix')
+            ->insert([
+                'id' => Uuid::random()->toString(),
+                'account_withdraw_id' => $createWithdrawErrorInputDTO->id,
+                'type' => $createWithdrawErrorInputDTO->pixType,
+                'key' => $createWithdrawErrorInputDTO->pixKey,
+            ]);
     }
 
     /**
