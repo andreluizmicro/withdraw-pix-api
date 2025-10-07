@@ -15,5 +15,7 @@ interface WithdrawRepositoryInterface
     /**
      * @return AccountWithdraw[]
      */
-    public function findScheduledPix(?int $limit = 1000): array;
+    public function findScheduledForToday(?int $limit = 1000): array;
+
+    public function updateScheduledForToday(string $accountWithdrawId, bool $done): void;
 }

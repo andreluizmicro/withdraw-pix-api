@@ -11,4 +11,6 @@ interface WithdrawPixRepositoryInterface
     public function create(AccountWithDrawPix $accountWithdrawPix): void;
 
     public function findById(string $id): ?AccountWithDrawPix;
+
+    public function findByAccountId(string $accountWithDrawId): ?AccountWithDrawPix;
 }

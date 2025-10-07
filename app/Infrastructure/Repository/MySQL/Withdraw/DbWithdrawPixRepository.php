@@ -66,4 +66,31 @@ class DbWithdrawPixRepository implements WithdrawPixRepositoryInterface
             )
         );
     }
+
+    /**
+     * @throws UuidException
+     * @throws WithDrawPixException
+     */
+    public function findByAccountId(string $accountWithDrawId): ?AccountWithDrawPix
+    {
+        $accountWithdrawPixDb = $this->database->table('account_withdraw_pix')
+            ->where('account_withdraw_id', $accountWithDrawId)
+            ->first();
+
+        if ($accountWithdrawPixDb === null) {
+            return null;
+        }
+
+        $type = new PixType($accountWithdrawPixDb->type);
+
+        return new AccountWithDrawPix(
+            id: new Uuid($accountWithdrawPixDb->id),
+            accountWithdrawId: new Uuid($accountWithdrawPixDb->account_withdraw_id),
+            type: $type,
+            key: new PixKey(
+                type: $type,
+                key: $accountWithdrawPixDb->key,
+            )
+        );
+    }
 }

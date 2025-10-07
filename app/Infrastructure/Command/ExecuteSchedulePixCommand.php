@@ -30,11 +30,11 @@ class ExecuteSchedulePixCommand extends Command
         $this->line('🚀 Iniciando execução dos PIX agendados...');
 
         try {
-            $schedules = $this->withdrawRepository->findScheduledPix();
+            $schedulesIds = $this->withdrawRepository->findScheduledForToday();
 
-            foreach ($schedules as $schedule) {
+            foreach ($schedulesIds as $id) {
                 $this->producer->produce(
-                    payload: ['account_withdraw_id' => $schedule->id()->value],
+                    payload: ['account_withdraw_id' => $id],
                 );
             }
 
