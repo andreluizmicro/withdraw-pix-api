@@ -22,7 +22,7 @@ use App\Domain\Repository\Withdraw\WithdrawPixRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawRepositoryInterface;
 use Throwable;
 
-final class WithdrawService
+class WithdrawService
 {
     public function __construct(
         private readonly AccountRepositoryInterface $accountRepository,
