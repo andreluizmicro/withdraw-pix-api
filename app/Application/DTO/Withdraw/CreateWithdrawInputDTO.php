@@ -24,7 +24,7 @@ class CreateWithdrawInputDTO
             pixType: $data['pix']['type'],
             pixKey: $data['pix']['key'],
             amount: $data['amount'],
-            schedule: $data['schedule'],
+            schedule: $data['schedule'] ?? null,
         );
     }
 }
