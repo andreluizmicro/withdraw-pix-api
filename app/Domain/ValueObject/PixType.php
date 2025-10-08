@@ -7,13 +7,13 @@ namespace App\Domain\ValueObject;
 use App\Domain\Enum\PixType as PixTypeEnum;
 use App\Domain\Exception\WithDrawPixException;
 
-readonly class PixType
+class PixType
 {
     /**
      * @throws WithDrawPixException
      */
     public function __construct(
-        private string $type,
+        private readonly string $type,
     ) {
         if (! $this->isValid()) {
             throw WithDrawPixException::invalidPixType();

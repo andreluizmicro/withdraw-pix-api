@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Event\Withdraw;
 
-use App\Domain\Entity\AccountWithdraw;
 use App\Domain\Event\EventInterface;
 
 abstract class AccountWithdrawEvent implements EventInterface
