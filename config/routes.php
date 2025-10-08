@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Infrastructure\Presentation\Http\V1\Controller\AccountController;
+use App\Infrastructure\Presentation\Http\V1\Controller\AccountWithdrawController;
 use Hyperf\HttpServer\Router\Router;
 
 Router::get('/health', fn () => [
@@ -10,8 +11,7 @@ Router::get('/health', fn () => [
     'time' => date(DATE_ATOM),
 ]);
 
-
 Router::addGroup('/v1', function () {
     Router::post('/account', [AccountController::class, 'create']);
-    Router::post('/account/{accountId}/balance/withdraw', [AccountController::class, 'withdraw']);
+    Router::post('/account/{accountId}/balance/withdraw', [AccountWithdrawController::class, 'withdraw']);
 });

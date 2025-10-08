@@ -6,7 +6,6 @@ namespace App\Domain\Repository\Account;
 
 use App\Domain\Entity\Account;
 use App\Domain\Exception\BalanceException;
-use App\Domain\Exception\Handler\Account\AccountNotFoundException;
 use App\Domain\Exception\Handler\Account\CreateAccountException;
 use App\Domain\Exception\NameException;
 use App\Domain\Exception\UuidException;
