@@ -99,7 +99,7 @@ class WithdrawPixProcessedEventTest extends TestCase
             'account_id' => $accountId->value,
             'method' => WithdrawMethod::PIX->value,
             'amount' => $withdrawAmount->value(),
-            'scheduled_for' => '2025-10-09',
+            'scheduled_for' => (new DateTimeImmutable(''))->modify('+1 day')->format('Y-m-d'),
             'type' => $pixType->value(),
             'key' => $pixKey->value(),
         ], $this->event->getProperties());
