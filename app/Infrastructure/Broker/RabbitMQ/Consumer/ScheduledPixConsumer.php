@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Infrastructure\Broker\RabbitMQ\Consumer;
 
 use App\Application\DTO\Schedule\ProcessScheduleInputDTO;
-use App\Application\UseCase\Schedule\ProcessSchedulePixUseCase;
+use App\Application\UseCase\Schedule\ProcessPixScheduledUseCase;
+use App\Domain\Exception\DomainError;
 use App\Domain\Exception\Handler\Account\AccountNotFoundException;
 use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Message\ConsumerMessage;
@@ -21,12 +22,13 @@ use PhpAmqpLib\Message\AMQPMessage;
 class ScheduledPixConsumer extends ConsumerMessage
 {
     public function __construct(
-        private ProcessSchedulePixUseCase $processSchedulePixUseCase,
+        private readonly ProcessPixScheduledUseCase $processSchedulePixUseCase,
     ) {
     }
 
     /**
      * @throws AccountNotFoundException
+     * @throws DomainError
      */
     public function consumeMessage($data, AMQPMessage $message): Result
     {

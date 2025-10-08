@@ -15,6 +15,7 @@ use App\Domain\Repository\Withdraw\WithdrawRepositoryInterface;
 use App\Domain\ValueObject\AmountWithdraw;
 use App\Domain\ValueObject\Schedule;
 use App\Domain\ValueObject\Uuid;
+use App\Infrastructure\DTO\Withdraw\UpdateWithdrawProcessErrorDTO;
 use DateTimeImmutable;
 use Hyperf\DbConnection\Db;
 use Throwable;
@@ -105,12 +106,14 @@ class DbWithdrawRepository implements WithdrawRepositoryInterface
              ->toArray();
     }
 
-    public function updateScheduledForToday(string $accountWithdrawId, bool $done): void
+    public function updateScheduledForToday(UpdateWithdrawProcessErrorDTO $errorDTO): void
     {
         $this->database->table('account_withdraw')
-            ->where('id', $accountWithdrawId)
+            ->where('id', $errorDTO->accountWithdrawId)
             ->update([
-                'done' => $done,
+                'done' => $errorDTO->done ?? false,
+                'error' => $errorDTO->error,
+                'error_reason' => $errorDTO->errorReason,
             ]);
     }
 }

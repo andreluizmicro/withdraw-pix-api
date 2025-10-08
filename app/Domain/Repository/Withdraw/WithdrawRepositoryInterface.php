@@ -6,6 +6,7 @@ namespace App\Domain\Repository\Withdraw;
 
 use App\Application\DTO\Withdraw\CreateWithdrawErrorInputDTO;
 use App\Domain\Entity\AccountWithdraw;
+use App\Infrastructure\DTO\Withdraw\UpdateWithdrawProcessErrorDTO;
 
 interface WithdrawRepositoryInterface
 {
@@ -20,5 +21,5 @@ interface WithdrawRepositoryInterface
      */
     public function findScheduledForToday(?int $limit = 1000): array;
 
-    public function updateScheduledForToday(string $accountWithdrawId, bool $done): void;
+    public function updateScheduledForToday(UpdateWithdrawProcessErrorDTO $errorDTO): void;
 }
