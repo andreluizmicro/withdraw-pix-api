@@ -11,6 +11,7 @@ API responsável por realizar o transações PIX.
 - [Fluxo de mensageria](#fluxo-de-mensageria)
 - [Rodando o projeto](#rodando-o-projeto)
 - [Endpoints](#endpoints)
+- [DDL Banco de dados](#ddl-banco-de-dados)
 
 
 ### Tecnologias usadas
@@ -85,6 +86,67 @@ MAIL_ENCRYPTION=""
 MAIL_FROM_ADDRESS="noreply@test.co"
 MAIL_FROM_NAME="${APP_NAME}"
 ```
+
+### DDL Banco de dados
+
+
+#### Acount
+```
+-- withdraw_pix.account definition
+
+CREATE TABLE `account` (
+    `id` char(36) NOT NULL,
+    `name` varchar(255) NOT NULL,
+    `balance` decimal(15,2) NOT NULL DEFAULT '0.00',
+    `is_active` enum('active','inactive') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'active',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+```
+
+#### Account Withdraw
+```
+-- withdraw_pix.account_withdraw definition
+
+CREATE TABLE `account_withdraw` (
+    `id` char(36) NOT NULL,
+    `account_id` char(36) NOT NULL,
+    `method` varchar(50) NOT NULL,
+    `amount` decimal(15,2) NOT NULL,
+    `scheduled` tinyint(1) DEFAULT '0',
+    `scheduled_for` datetime DEFAULT NULL,
+    `done` tinyint(1) DEFAULT '0',
+    `error` tinyint(1) DEFAULT '0',
+    `error_reason` varchar(255) DEFAULT NULL,
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+     PRIMARY KEY (`id`),
+     KEY `account_id` (`account_id`),
+    CONSTRAINT `account_withdraw_ibfk_1` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+#### Account Withdraw Pix
+
+```
+-- withdraw_pix.account_withdraw_pix definition
+
+CREATE TABLE `account_withdraw_pix` (
+    `id` char(36) NOT NULL,
+    `account_withdraw_id` char(36) NOT NULL,
+    `type` enum('cpf','cnpj','email','phone','random') NOT NULL,
+    `key` varchar(255) NOT NULL,
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `account_withdraw_id` (`account_withdraw_id`),
+    CONSTRAINT `account_withdraw_pix_ibfk_1` FOREIGN KEY (`account_withdraw_id`) REFERENCES `account_withdraw` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+#### 
 
 ### Endpoints
 
