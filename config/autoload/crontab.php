@@ -10,7 +10,7 @@ return [
     'crontab' => [
         (new Crontab())
             ->setName('pix-scheduled-executor')
-            ->setRule('0 * * * *')
+            ->setRule('* * * * *')
             ->setCallback([ExecuteSchedulePixCommand::class, 'handle'])
     ],
 ];

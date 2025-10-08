@@ -54,7 +54,7 @@ class WithdrawEmailNotificationService
      */
     public function notifySuccess(WithdrawNotificationInputDTO $input): void
     {
-        $withdrawPix = $this->withdrawPixRepository->findById($input->accountWithdrawId);
+        $withdrawPix = $this->withdrawPixRepository->findByAccountId($input->accountWithdrawId);
         $withdraw = $this->withdrawRepository->findById($withdrawPix->accountWithdrawId()->value);
         $account = $this->accountRepository->findById($withdraw->accountId()->value);
 

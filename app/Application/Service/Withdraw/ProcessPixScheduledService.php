@@ -8,7 +8,11 @@ use App\Application\DTO\Notification\WithdrawNotificationInputDTO;
 use App\Application\DTO\Schedule\ProcessScheduleInputDTO;
 use App\Application\Service\Notification\WithdrawEmailNotificationService;
 use App\Domain\Adapter\UnitOfWorkAdapterInterface;
+use App\Domain\Exception\BalanceException;
 use App\Domain\Exception\DomainError;
+use App\Domain\Exception\NameException;
+use App\Domain\Exception\UuidException;
+use App\Domain\Exception\WithdrawException;
 use App\Domain\Repository\Account\AccountRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawAggregateRepositoryInterface;
 use App\Domain\Repository\Withdraw\WithdrawPixRepositoryInterface;
@@ -25,8 +29,7 @@ class ProcessPixScheduledService
         private readonly WithdrawAggregateRepositoryInterface $withdrawAggregateRepository,
         private readonly UnitOfWorkAdapterInterface $unitOfWorkAdapter,
         private readonly WithdrawEmailNotificationService $notificationService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DomainError
@@ -38,55 +41,78 @@ class ProcessPixScheduledService
         try {
             $aggregate = $this->withdrawAggregateRepository->findWithdrawAggregate($inputDTO->accountWithdrawId);
 
-            $account = $this->accountRepository->findById($aggregate->accountId);
+            if ($aggregate === null) {
+                throw new DomainError('Agendamento não encontrado.');
+            }
 
-            $account->subtract($aggregate->withdrawAmount);
-
-            $this->accountRepository->update($account);
-
-            $this->withdrawRepository->updateScheduledForToday(
-                new UpdateWithdrawProcessErrorDTO(
-                    accountWithdrawId: $aggregate->withdrawId,
-                    error: false,
-                    errorReason: null,
-                    done: true
-                )
-            );
+            $this->processWithdrawal($aggregate);
 
             $this->notificationService->notifySuccess(
                 new WithdrawNotificationInputDTO(
-                    accountWithdrawId: $aggregate->pixId,
-                ),
+                    accountWithdrawId: $aggregate->withdrawId
+                )
             );
 
             $this->unitOfWorkAdapter->commit();
         } catch (Throwable $exception) {
             $this->unitOfWorkAdapter->rollback();
 
-            $this->withdrawRepository->updateScheduledForToday(
-                new UpdateWithdrawProcessErrorDTO(
-                    accountWithdrawId: $inputDTO->accountWithdrawId,
-                    error: true,
-                    errorReason: $exception->getMessage(),
-                    done: false
-                )
-            );
+            $this->handleFailure($inputDTO, $exception);
 
-            $accountWithdraw = $this->withdrawRepository->findById($inputDTO->accountWithdrawId);
-
-            $accountWithdrawPix = $this->withdrawPixRepository->findByAccountId($accountWithdraw->id()->value);
-
-            $this->notificationService->notifyError(
-                new WithdrawNotificationInputDTO(
-                    accountId: $accountWithdraw->accountId()->value,
-                    accountWithdrawId: $inputDTO->accountWithdrawId,
-                    pixType: $accountWithdrawPix->type()->value(),
-                    pixKey: $accountWithdrawPix->key()->value(),
-                    amount: $accountWithdraw->amount()->value(),
-                )
-            );
-
-            throw new DomainError($exception->getMessage());
+            throw new DomainError($exception->getMessage(), previous: $exception);
         }
+    }
+
+    /**
+     * @throws UuidException
+     * @throws NameException
+     * @throws WithdrawException
+     * @throws BalanceException
+     */
+    private function processWithdrawal($aggregate): void
+    {
+        $account = $this->accountRepository->findById($aggregate->accountId);
+
+        $account->subtract($aggregate->withdrawAmount);
+        $this->accountRepository->update($account);
+
+        $this->withdrawRepository->updateScheduledForToday(
+            new UpdateWithdrawProcessErrorDTO(
+                accountWithdrawId: $aggregate->withdrawId,
+                error: false,
+                errorReason: null,
+                done: true
+            )
+        );
+    }
+
+    /**
+     * @throws UuidException
+     * @throws NameException
+     * @throws BalanceException
+     */
+    private function handleFailure(ProcessScheduleInputDTO $inputDTO, Throwable $exception): void
+    {
+        $this->withdrawRepository->updateScheduledForToday(
+            new UpdateWithdrawProcessErrorDTO(
+                accountWithdrawId: $inputDTO->accountWithdrawId,
+                error: true,
+                errorReason: $exception->getMessage(),
+                done: false
+            )
+        );
+
+        $accountWithdraw = $this->withdrawRepository->findById($inputDTO->accountWithdrawId);
+        $accountWithdrawPix = $this->withdrawPixRepository->findByAccountId($accountWithdraw->id()->value);
+
+        $this->notificationService->notifyError(
+            new WithdrawNotificationInputDTO(
+                accountId: $accountWithdraw->accountId()->value,
+                accountWithdrawId: $inputDTO->accountWithdrawId,
+                pixType: $accountWithdrawPix->type()->value(),
+                pixKey: $accountWithdrawPix->key()->value(),
+                amount: $accountWithdraw->amount()->value(),
+            )
+        );
     }
 }
