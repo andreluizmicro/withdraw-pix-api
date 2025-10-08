@@ -10,4 +10,3 @@ enum EventCategory: string
     case WITHDRAW_ERROR = 'WITHDRAW_ERROR';
     CASE WITHDRAW_PIX_PROCESSED = 'WITHDRAW_PIX_PROCESSED';
 }
-

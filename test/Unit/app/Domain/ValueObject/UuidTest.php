@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HyperfTest\Unit\app\Domain\ValueObject;
+namespace Tests\Unit\app\Domain\ValueObject;
 
 use App\Domain\Exception\UuidException;
 use App\Domain\ValueObject\Uuid;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HyperfTest\Unit\app\Domain\Entity;
+namespace Tests\Unit\app\Domain\Entity;
 
 use App\Domain\Entity\AccountWithDrawPix;
 use App\Domain\Exception\UuidException;
@@ -12,7 +12,7 @@ use App\Domain\ValueObject\PixType;
 use App\Domain\ValueObject\Uuid;
 use PHPUnit\Framework\TestCase;
 
-class WithdrawPixTest extends TestCase
+class AccountWithdrawPixTest extends TestCase
 {
     /**
      * @throws UuidException

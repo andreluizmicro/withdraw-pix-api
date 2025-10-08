@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HyperfTest\Unit\app\Domain\Entity;
+namespace Tests\Unit\app\Domain\Entity;
 
 use App\Domain\Entity\Account;
 use App\Domain\Exception\BalanceException;

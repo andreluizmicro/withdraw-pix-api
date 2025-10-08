@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HyperfTest\Unit\app\Domain\ValueObject;
+namespace Tests\Unit\app\Domain\ValueObject;
 
 use App\Domain\Exception\AmountWithdrawException;
 use App\Domain\ValueObject\AmountWithdraw;
@@ -28,6 +28,6 @@ class AmountWithdrawTest extends TestCase
         $this->expectExceptionMessage(AmountWithdrawException::class);
         $this->expectExceptionMessage('Invalid amount');
 
-        $amountWithdraw = new AmountWithdraw(value: 0.00);
+        new AmountWithdraw(value: 0.00);
     }
 }

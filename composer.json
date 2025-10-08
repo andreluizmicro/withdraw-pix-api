@@ -61,7 +61,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "HyperfTest\\": "./test/"
+            "Tests\\": "./test/"
         }
     },
     "minimum-stability": "dev",

@@ -10,11 +10,11 @@ use App\Domain\Enum\EventCategory;
 use App\Domain\Enum\Events;
 use App\Domain\Event\EventInterface;
 
-class WithdrawPixProcessedEvent implements EventInterface
+readonly class WithdrawPixProcessedEvent implements EventInterface
 {
     public function __construct(
-        public readonly AccountWithdraw $accountWithdraw,
-        public readonly AccountWithdrawPix $accountWithdrawPix,
+        public AccountWithdraw    $accountWithdraw,
+        public AccountWithdrawPix $accountWithdrawPix,
     ) {
     }
 

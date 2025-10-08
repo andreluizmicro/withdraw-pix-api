@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HyperfTest\Unit\app\Domain\Validation;
+namespace Tests\Unit\app\Domain\Validation;
 
 use App\Domain\Validation\DomainValidation;
 use PHPUnit\Framework\TestCase;
