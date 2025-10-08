@@ -25,7 +25,6 @@ class ProcessPixScheduledUseCase
             $this->withdrawService->process($inputDTO);
 
         } catch (Throwable $e) {
-
             throw new DomainError($e->getMessage());
         }
     }

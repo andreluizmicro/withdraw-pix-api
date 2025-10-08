@@ -31,7 +31,8 @@ class AccountWithdrawPixCreatedEvent extends AccountWithdrawEvent
     {
         return [
             'event_name' => $this->getName(),
-            'account_withdraw_pix_id' => $this->accountWithdrawPix->id(),
+            'account_withdraw_pix_id' => $this->accountWithdrawPix->id()->value,
+            'scheduled' => $this->accountWithdraw->schedule()->scheduled(),
         ];
     }
 }

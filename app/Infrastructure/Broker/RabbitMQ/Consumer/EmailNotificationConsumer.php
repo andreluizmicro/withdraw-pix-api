@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Broker\RabbitMQ\Consumer;
 
+use App\Application\DTO\Notification\WithdrawNotificationInputDTO;
 use App\Application\Service\Notification\WithdrawEmailNotificationService;
 use App\Application\Service\Withdraw\ProcessWithdrawErrorService;
 use App\Domain\Exception\BalanceException;
@@ -42,9 +43,24 @@ class EmailNotificationConsumer extends ConsumerMessage
             if (isset($data['error'])) {
                 $this->processWithdrawErrorService->execute($data);
 
-                $this->notificationService->notifyError($data);
-            } else {
-                $this->notificationService->notifySuccess($data);
+                $this->notificationService->notifyError(
+                    new WithdrawNotificationInputDTO(
+                        accountId: $data['account_id'],
+                        pixType: $data['pix_type'],
+                        pixKey: $data['pix_key'],
+                        amount: $data['amount'],
+                    )
+                );
+
+                return Result::ACK;
+            }
+
+            if ($data['scheduled'] === false) {
+                $this->notificationService->notifySuccess(
+                    new WithdrawNotificationInputDTO(
+                        accountWithdrawId: $data['account_withdraw_pix_id'],
+                    ),
+                );
             }
 
             return Result::ACK;

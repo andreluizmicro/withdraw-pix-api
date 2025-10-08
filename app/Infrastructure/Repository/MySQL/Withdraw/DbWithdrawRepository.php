@@ -100,6 +100,7 @@ class DbWithdrawRepository implements WithdrawRepositoryInterface
              ->where('scheduled', true)
              ->whereDate('scheduled_for', date('Y-m-d'))
              ->where('done', false)
+             ->where('error', false)
              ->orderBy('created_at')
              ->limit($limit)
              ->get('id')

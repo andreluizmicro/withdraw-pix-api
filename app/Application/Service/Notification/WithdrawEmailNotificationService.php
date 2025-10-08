@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Service\Notification;
 
+use App\Application\DTO\Notification\WithdrawNotificationInputDTO;
 use App\Domain\Exception\BalanceException;
 use App\Domain\Exception\NameException;
 use App\Domain\Exception\UuidException;
@@ -29,17 +30,17 @@ class WithdrawEmailNotificationService
      * @throws BalanceException
      * @throws NameException
      */
-    public function notifyError(array $data): void
+    public function notifyError(WithdrawNotificationInputDTO $input): void
     {
-        $account = $this->accountRepository->findById($data['account_id']);
+        $account = $this->accountRepository->findById($input->accountId);
 
         $this->notification->sendEmail(
-            email: $data['pix_key'],
+            email: $input->pixKey,
             data: [
                 'account_name' => $account->name()->value,
-                'amount' => $data['amount'],
-                'pix_key' => $data['pix_key'],
-                'pix_type' => $data['pix_type'],
+                'amount' => $input->amount,
+                'pix_key' => $input->pixKey,
+                'pix_type' => $input->pixType,
                 'date_time' => (new DateTimeImmutable())->format('d/m/Y H:i:s'),
             ],
             template: EmailTemplate::WITHDRAW_PIX_ERROR_MAIL,
@@ -51,9 +52,9 @@ class WithdrawEmailNotificationService
      * @throws BalanceException
      * @throws NameException
      */
-    public function notifySuccess(array $data): void
+    public function notifySuccess(WithdrawNotificationInputDTO $input): void
     {
-        $withdrawPix = $this->withdrawPixRepository->findById($data['account_withdraw_pix_id']['value']);
+        $withdrawPix = $this->withdrawPixRepository->findById($input->accountWithdrawId);
         $withdraw = $this->withdrawRepository->findById($withdrawPix->accountWithdrawId()->value);
         $account = $this->accountRepository->findById($withdraw->accountId()->value);
 
