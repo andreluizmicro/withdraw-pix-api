@@ -49,7 +49,7 @@ class ProcessPixScheduledService
 
             $this->notificationService->notifySuccess(
                 new WithdrawNotificationInputDTO(
-                    accountWithdrawId: $aggregate->withdrawId
+                    accountWithdrawPixId: $aggregate->pixId,
                 )
             );
 

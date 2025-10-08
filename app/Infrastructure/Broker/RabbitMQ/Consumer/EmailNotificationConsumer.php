@@ -58,7 +58,7 @@ class EmailNotificationConsumer extends ConsumerMessage
             if ($data['scheduled'] === false) {
                 $this->notificationService->notifySuccess(
                     new WithdrawNotificationInputDTO(
-                        accountWithdrawId: $data['account_withdraw_pix_id'],
+                        accountWithdrawPixId: $data['account_withdraw_pix_id'],
                     ),
                 );
             }

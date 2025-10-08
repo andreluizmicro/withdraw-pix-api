@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Saque PIX realizado com sucesso</title>
+    <title>Saque PIX Agendando realizado com sucesso</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
