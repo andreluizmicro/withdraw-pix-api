@@ -28,6 +28,11 @@ API responsável por realizar o transações PIX.
 
 ### Fluxo de mensageria
 
+Atualmente o sistema conta com duas filas.
+
+- `scheduled_pix_queue`: Fila que recebe os ids de pix agendados serem processados.
+- `withdraw_que`: Recebe todas as retiradas.
+
 <img src="./docs/rabbitmq_flow.png">
 
 ### Rodando o Projeto
@@ -89,6 +94,7 @@ MAIL_FROM_NAME="${APP_NAME}"
 
 ### DDL Banco de dados
 
+Abaixo estão listadas as tabelas do banco de dados.
 
 #### Acount
 ```

@@ -27,7 +27,7 @@ class ExecuteSchedulePixCommand extends Command
 
     public function handle(): void
     {
-        $this->line('🚀 Iniciando execução dos PIX agendados...');
+        $this->line('Iniciando execução dos PIX agendados...');
 
         try {
             $schedulesIds = $this->withdrawRepository->findScheduledForToday();
@@ -38,9 +38,9 @@ class ExecuteSchedulePixCommand extends Command
                 );
             }
 
-            $this->info('✅ PIX agendados executados com sucesso.');
+            $this->info('PIX agendados executados com sucesso.');
         } catch (Throwable $e) {
-            $this->error('❌ Erro ao executar PIX agendados: ' . $e->getMessage());
+            $this->error('Erro ao executar PIX agendados: ' . $e->getMessage());
         }
     }
 }
